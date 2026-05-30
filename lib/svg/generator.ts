@@ -1177,7 +1177,7 @@ export function generateNotFoundSVG(
   let ghostTowers = '';
   for (const { col, row, h } of GHOST_LAYOUT) {
     const tx = 300 + (col - row) * 16;
-    const ty = 120 + (col + row) * 9;
+    const ty = 120 + (col + row) * 10;
 
     ghostTowers += `
       <g transform="translate(${tx}, ${ty - h})">
@@ -1580,7 +1580,7 @@ export function generateRateLimitSVG(
   let ghostTowers = '';
   for (const { col, row, h } of ghostLayout) {
     const tx = 300 + (col - row) * 16;
-    const ty = 120 + (col + row) * 9;
+    const ty = 120 + (col + row) * 10;
 
     ghostTowers += `
       <g transform="translate(${tx}, ${ty - h})">

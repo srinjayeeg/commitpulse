@@ -11,8 +11,6 @@ import { CustomizeCTA } from './components/CustomizeCTA';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Footer } from '@/app/components/Footer';
-import InteractiveViewer from '@/components/InteractiveViewer';
-import DOMPurify from 'dompurify';
 
 const Icons = {
   Github: () => (
@@ -72,7 +70,6 @@ const Icons = {
 export default function LandingPage() {
   const [username, setUsername] = useState('');
   const [copied, setCopied] = useState(false);
-  const [svgContent, setSvgContent] = useState<string | null>(null);
   const [svgState, setSvgState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const guideRef = useRef<HTMLDivElement>(null);
@@ -92,27 +89,21 @@ export default function LandingPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://commitpulse.vercel.app';
   const markdown = `![CommitPulse](${siteUrl}/api/streak?user=${trimmedUsername})`;
 
-  // Fetch SVG content whenever debounced username changes.
+  // Probe badge URL for errors; actual rendering uses a native <img> tag.
   useEffect(() => {
     if (!hasUsername) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSvgContent(null);
-
       setSvgState('idle');
       return;
     }
 
     setSvgState('loading');
 
-    setSvgContent(null);
-
     const controller = new AbortController();
 
     fetch(badgeUrl, { signal: controller.signal })
       .then(async (res) => {
-        const text = await res.text();
         if (!res.ok) {
-          setSvgContent(null);
           setSvgState('error');
           if (res.status === 404 || res.status === 400 || res.status === 429) {
             setErrorMessage('GitHub user not found');
@@ -121,11 +112,6 @@ export default function LandingPage() {
           }
           return;
         }
-        return text;
-      })
-      .then((text) => {
-        if (!text) return;
-        setSvgContent(text);
         setSvgState('loaded');
         setErrorMessage(null);
       })
@@ -357,7 +343,7 @@ export default function LandingPage() {
 
           <div className="group relative mt-10">
             <div className="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 opacity-50 blur-2xl transition duration-1000 group-hover:opacity-100" />
-            <InteractiveViewer className="relative flex min-h-[360px] items-center justify-center overflow-hidden rounded-3xl border border-black/5 bg-white/50 p-8 backdrop-blur-xl shadow-2xl dark:border-white/10 dark:bg-[#0a0a0a]/80">
+            <div className="relative flex min-h-[480px] md:min-h-[520px] items-center justify-center overflow-visible rounded-3xl border border-black/5 bg-white/50 p-8 backdrop-blur-xl shadow-2xl dark:border-white/10 dark:bg-[#0a0a0a]/80">
               {hasUsername ? (
                 <div className="w-full flex items-center justify-center">
                   {svgState === 'loading' && (
@@ -388,21 +374,21 @@ export default function LandingPage() {
                       </p>
                     </div>
                   )}
-                  {svgState === 'loaded' && svgContent && (
+                  {svgState === 'loaded' && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.5, ease: 'easeOut' }}
-                      className="cp-svg-container w-full max-w-[700px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)] [&>svg]:w-full [&>svg]:h-auto"
-                      dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(svgContent, {
-                          USE_PROFILES: { svg: true, html: true },
-                        }),
-                      }}
-                    />
-                  )}
-                  {svgState === 'loaded' && !svgContent && errorMessage && (
-                    <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+                      className="w-full max-w-[700px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        data-testid="badge-img"
+                        src={badgeUrl}
+                        alt={`CommitPulse badge for ${debouncedUsername}`}
+                        className="w-full h-auto"
+                      />
+                    </motion.div>
                   )}
                 </div>
               ) : (
@@ -419,7 +405,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               )}
-            </InteractiveViewer>
+            </div>
           </div>
         </section>
 
