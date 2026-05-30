@@ -95,10 +95,8 @@ describe('trackUser', () => {
       configurable: true,
     });
 
-    trackUser('');
-
-    expect(sendBeaconMock).toHaveBeenCalledTimes(1);
-    expect(sendBeaconMock).toHaveBeenCalledWith('/api/track-user', expect.any(Blob));
+    expect(() => trackUser('')).not.toThrow();
+    expect(sendBeaconMock).not.toHaveBeenCalled();
   });
 
   it('falls back to fetch when sendBeacon returns false', () => {
