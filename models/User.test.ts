@@ -93,4 +93,37 @@ describe('User Model', () => {
       readyStateSpy.mockRestore();
     });
   });
+
+  describe('Database Connection State 0 Handling', () => {
+    it('fails queries gracefully with a ConnectionError when disconnected', async () => {
+      // Import vi locally to match the pattern used in the State 2 test
+      const { vi } = await import('vitest');
+
+      // 1. Force the mongoose connection state to 0 (Disconnected)
+      const readyStateSpy = vi
+        .spyOn(mongoose.connection, 'readyState', 'get')
+        .mockReturnValue(0 as unknown as typeof mongoose.connection.readyState);
+
+      expect(mongoose.connection.readyState).toBe(0);
+
+      // 2. Mock a database operation to simulate a connection failure
+      // Mongoose throws specific errors when bufferCommands is false and state is 0
+      const mockConnectionError = new Error('Database connection lost');
+      mockConnectionError.name = 'ConnectionError';
+
+      const findOneSpy = vi.spyOn(User, 'findOne').mockRejectedValue(mockConnectionError);
+
+      // 3. Verify that attempting to query throws the expected ConnectionError
+      await expect(User.findOne({ username: 'testuser' })).rejects.toThrow(
+        'Database connection lost'
+      );
+      await expect(User.findOne({ username: 'testuser' })).rejects.toMatchObject({
+        name: 'ConnectionError',
+      });
+
+      // 4. Clean up mocks to prevent side effects in other tests
+      readyStateSpy.mockRestore();
+      findOneSpy.mockRestore();
+    });
+  });
 });
