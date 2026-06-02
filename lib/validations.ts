@@ -297,6 +297,7 @@ const baseStreakParamsSchema = z.object({
       message: 'Invalid organization name format',
     })
     .optional(),
+  show_repos: z.string().optional().transform(toBooleanFlag),
   labels: z.string().optional().transform(toBooleanFlag),
   labelColor: z
     .string()

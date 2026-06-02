@@ -231,6 +231,8 @@ export interface BadgeParams {
   /** Custom gradient direction: 'vertical', 'horizontal', or 'diagonal'. Only used when gradient=true. */
   gradient_dir?: 'vertical' | 'horizontal' | 'diagonal';
 
+  show_repos?: boolean;
+  topRepos?: Array<{ name: string; stars: number; language: string | null }>;
   disable_particles?: boolean;
   animate?: boolean;
   glow?: boolean;
