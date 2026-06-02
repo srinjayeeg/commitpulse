@@ -66,6 +66,15 @@ export function escapeXML(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
+function getUserDisplayName(params: BadgeParams): string {
+  const rawUser = params.user || 'GitHub User';
+  return params.isOfflineFallback ? `${rawUser} [STALE CACHE]` : rawUser;
+}
+
+function renderOfflineFallbackSuffix(params: BadgeParams): string {
+  return params.isOfflineFallback ? `<tspan fill="#ff9f43"> [STALE CACHE]</tspan>` : '';
+}
+
 export function particleCount(count: number): number {
   if (count === 0) return 0;
   return Math.min(5, Math.max(3, Math.floor(count / 4)));
@@ -524,7 +533,7 @@ function renderFooter(
   const s = createScaler(sf);
   return `
   ${!params.hide_stats ? renderStatsSection(stats, labels, s, params) : ''}
-  ${!params.hide_title ? `<text x="${s(300)}" y="${s(50)}" text-anchor="middle" class="title">${truncateUsername(safeUser).toUpperCase()}</text>` : ''}
+  ${!params.hide_title ? `<text x="${s(300)}" y="${s(50)}" text-anchor="middle" class="title">${truncateUsername(safeUser).toUpperCase()}${renderOfflineFallbackSuffix(params)}</text>` : ''}
   ${renderRadarScan(params.speed || '8s', sf, accent, false)}`;
 }
 
@@ -663,6 +672,7 @@ export function generateSVG(
 
   const animate = params.animate ?? true;
   const safeUser = escapeXML(params.user || 'GitHub User');
+  const safeUserWithFallback = escapeXML(getUserDisplayName(params));
   const bg = `#${sanitizeHexColor(params.bg, '0d1117')}`;
 
   const accent = Array.isArray(params.accent)
@@ -719,7 +729,7 @@ export function generateSVG(
 
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ${W} ${H}" fill="none" role="img" aria-labelledby="cp-title-${safeId}" aria-describedby="cp-desc-${safeId}">
-  ${renderHeader(safeUser, stats, sf, params, safeId)}
+  ${renderHeader(safeUserWithFallback, stats, sf, params, safeId)}
   ${renderStyle(selectedFont, statsFont, googleFontsImport, text, mainAccentHex, sf, bg, params.entrance || 'rise')}
   <rect width="${W}" height="${H}" rx="${radius}" fill="${params.hideBackground ? 'transparent' : bg}" ${borderAttr} />
   <g id="cp-towers" style="transform-origin: center; transform-box: fill-box;" transform="translate(0, ${Math.round(20 * sf)})">${towers}</g>
@@ -741,6 +751,7 @@ function generateAutoThemeSVG(
   const darkLabelFill = getLuminance(dark.bg) > 0.5 ? 'var(--cp-text)' : 'var(--cp-accent)';
   const darkLabelOpacity = getLuminance(dark.bg) > 0.5 ? '0.8' : '0.7';
   const safeUser = escapeXML(params.user || 'GitHub User');
+  const safeUserWithFallback = escapeXML(getUserDisplayName(params));
   const sanitizedFont = sanitizeFont(params.font);
   const selectedFont = resolveFont(sanitizedFont);
   const statsFont = selectedFont || '"Space Grotesk", sans-serif';
@@ -775,7 +786,7 @@ function generateAutoThemeSVG(
   aria-labelledby="cp-title-${safeId}"
   aria-describedby="cp-desc-${safeId}"
 >
-  ${renderHeader(safeUser, stats, sf, params, safeId)}
+  ${renderHeader(safeUserWithFallback, stats, sf, params, safeId)}
 
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code&amp;family=JetBrains+Mono&amp;family=Roboto&amp;family=Syncopate:wght@400;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap');
