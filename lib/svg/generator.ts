@@ -2213,6 +2213,7 @@ export function generatePulseSVG(
   }
 
   const safeUser = escapeXML(params.user || 'GitHub User');
+  const safeId = safeUser.replace(/[^a-zA-Z0-9-]/g, '_').toLowerCase();
   const bg = `#${sanitizeHexColor(params.bg, '0d1117')}`;
 
   const rawAccent = Array.isArray(params.accent)
@@ -2312,8 +2313,11 @@ export function generatePulseSVG(
   viewBox="0 0 ${width} ${height}"
   fill="none"
   role="img"
+  aria-labelledby="cp-title-${safeId}"
+  aria-describedby="cp-desc-${safeId}"
 >
-  <title>Heartbeat Sparkline for ${safeUser}</title>
+  <title id="cp-title-${safeId}">Heartbeat Sparkline for ${safeUser}</title>
+  <desc id="cp-desc-${safeId}">showing commit activity over the last 30 days with total commits: ${pulseTotal}.</desc>
   <style>
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code&amp;family=JetBrains+Mono&amp;family=Roboto&amp;family=Syncopate:wght@400;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap');
   ${googleFontsImport}
@@ -2410,6 +2414,7 @@ function generateAutoThemePulseSVG(
   const light = AUTO_THEME_LIGHT;
   const dark = AUTO_THEME_DARK;
   const safeUser = escapeXML(params.user || 'GitHub User');
+  const safeId = safeUser.replace(/[^a-zA-Z0-9-]/g, '_').toLowerCase();
 
   const sanitizedFont = sanitizeFont(params.font);
   const predefinedFont = sanitizedFont
@@ -2501,8 +2506,11 @@ function generateAutoThemePulseSVG(
   viewBox="0 0 ${width} ${height}"
   fill="none"
   role="img"
+  aria-labelledby="cp-title-${safeId}"
+  aria-describedby="cp-desc-${safeId}"
 >
-  <title>Heartbeat Sparkline for ${safeUser}</title>
+  <title id="cp-title-${safeId}">Heartbeat Sparkline for ${safeUser}</title>
+  <desc id="cp-desc-${safeId}">showing commit activity over the last 30 days with total commits: ${pulseTotal}.</desc>
   <style>
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code&amp;family=JetBrains+Mono&amp;family=Roboto&amp;family=Syncopate:wght@400;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap');
   ${googleFontsImport}
