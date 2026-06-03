@@ -162,7 +162,7 @@ export async function GET(request: Request) {
       hideBackground: hide_background,
       hide_stats,
       lang,
-      view,
+      view: view as 'default' | 'monthly' | 'heatmap' | 'pulse' | undefined,
       delta_format,
       width,
       height,
